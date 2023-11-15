@@ -1,3 +1,5 @@
+"""
+
 # create weekday 0~23hr and weekend 0~23hr graphs, total of 48 graphs
 
 
@@ -47,3 +49,66 @@ def createGraphs():
 
 
 #createGraphs()
+
+
+
+import math
+import heapq
+
+
+"""
+'''
+nodes = {}
+with open('./data/node_data.json', 'r') as file:
+    nodes = json.load(file)
+'''
+
+
+
+
+import csv
+
+
+
+def calculate_travel_times(length, speeds):
+    # Avoid division by zero in case of speed being zero
+    return [length / speed if speed > 0 else float('inf') for speed in speeds] #hours
+
+
+def get_edge_weight(current_time, edge):
+    hour = current_time.hour
+    if current_time.weekday() < 5:  # Weekday
+        travel_time = edge[1][hour]
+    else:  # Weekend
+        travel_time = edge[2][hour]
+    return travel_time
+
+
+#creating the actual graph
+def createGraph():
+    edges = []
+    with open('givenDataFromSakai/edges.csv', 'r') as file:
+        # Create a CSV reader object
+        csv_reader = csv.reader(file)
+        csv_reader.__next__()  # Skip the header row
+    
+    # Iterate through each row in the CSV file
+    for row in csv_reader:
+        # Access the columns in the row
+        start_id = int(row[0])
+        end_id = int(row[1])
+        length = float(row[2])
+        weekdays = [float(value) for value in row[3:27]]
+        weekends = [float(value) for value in row[27:]]
+
+        edges.append((start_id, end_id, length, weekdays, weekends))
+
+
+    graph = {}
+    for start, end, length, weekdays, weekends in edges:
+        if start not in graph:
+            graph[start] = []
+        weekday_times = calculate_travel_times(length, weekdays)
+        weekend_times = calculate_travel_times(length, weekends)
+        graph[start].append((end, weekday_times, weekend_times))
+

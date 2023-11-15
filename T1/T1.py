@@ -1,14 +1,15 @@
 from reading_in_drivers import *
 from reading_in_passengers import *
-from createGraphs import *
+from createGraph import *
 from datetime import timedelta
+import csv
 
 # 1. load data and initialize passenger priority queue and driver priority queue using loading_drivers_and_passengers.py)
 passengersHeap_PQ = read_passengers_csv('givenDataFromSakai/passengers.csv')
 driversHeap_PQ = read_drivers_csv('givenDataFromSakai/drivers.csv')
 
 #2. load the graph
-graphs = createGraphs()
+graphs = createGraph()
 
 # 3. initializing metricsRecorded, which we'll use to talk about efficiency in the .pdf report we'll submit on Gradescope or something
 metricsRecorded = [] # each item in metricsRecorded should contain a list that is: [timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff, timeItTookForPassengerToGoFromUnmatchedToDroppedOff]
@@ -70,7 +71,7 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
     passengerWillBePickedUpHereNodeID = thePassenger.pickUpLocationVertexID
     passengerWillBeDroppedOffHereNodeID = thePassenger.dropOffLocationVertexID
 
-
+    
     # calculate and store how long it will take for theDriver to get to thePassenger, in units of hours
     timeItTookForDriverToGetToPassenger = nx.shortest_path_length(
         graphToUse, 
@@ -88,6 +89,7 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
         target=passengerWillBeDroppedOffHereNodeID, 
         weight='weight'
     )
+    
 
 
     # passenger became available later than driver became available
@@ -134,10 +136,41 @@ def T1(passengersHeap_PQ, driversHeap_PQ):
 
 
 
-T1(passengersHeap_PQ, driversHeap_PQ)
+#T1(passengersHeap_PQ, driversHeap_PQ)
+
+
+
+def summarizeT1result(outputOfTheT1Algo):
+    # outputOfTheT1Algo = list -> each item in the list is a dictonary that looks something like:
+    # {'timeItTookForDriverToGetToPassenger': 0.06343763989668617, 'timeItTookFromPickupToDropoff': 0.1664803757009768, 'timeItTookForPassengerToGoFromUnmatchedToDroppedOff': 0.2321906828198852}
+
+    # things to aggregate/summarize:
+    # D1 = minimize the amount of time (in minutes) between when they appear as an unmatched passenger, and when they are dropped off at their destination.
+    D1list = []
+
+
+
+    # D2 = Drivers want to maximize ride profit, defined as the number of minutes they spend driving passengers from pickup to drop-off locations minus the number of minutes they spend driving to pickup passengers
+    # so, when D2 is NEGATIVE, that means driver took longer to get to the pick-up location than it took to drive the passenger in their car
+    D2list = []
+
+
+    for item in outputOfTheT1Algo:
+        D1list.append(item['timeItTookForPassengerToGoFromUnmatchedToDroppedOff'] * 60) # converting to minutes
+        D2list.append((item['timeItTookFromPickupToDropoff'] - item['timeItTookForDriverToGetToPassenger']) * 60) # converting to minutes
+
+    with open('T1_summary.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+
+        # Write D1list as the first row
+        writer.writerow(D1list)
+
+        # Write D2list as the second row
+        writer.writerow(D2list)
 
 
 
 
 
-
+simulation = T1(passengersHeap_PQ, driversHeap_PQ)
+summarizeT1result(simulation)
