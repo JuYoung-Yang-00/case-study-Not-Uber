@@ -1,0 +1,53 @@
+From the case study pdf:
+Consider a very simple baseline that just keeps track of queues of available drivers and unmatched passengers and assigns the longest waiting passenger to the first available driver, whenever possible.
+
+Implement this algorithm and conduct an experiment measuring the performance of the algorithm in terms of desiderata D1-D3.
+
+
+
+Notes on T1:
+1. drivers.csv is just a list of drivers sorted in increasing order of the time the driver starts looking for a passenger. Format MM/DD/YYYY HH:MM:SS
+2. passengers.csv is just a list of drivers sorted in increasing order of the time the passenger starts looking for a ride. Format MM/DD/YYYY HH:MM:SS
+
+
+
+Defining/Interpreting Specific Language:
+- "the longest waiting passenger" = the passenger with the earliest timestamp in passengers.csv (the time the "passenger starts looking for a ride")
+- "first available driver" = the driver with the earliest timestamp in drivers.csv (the time the "driver starts looking for a passenger")
+
+
+
+
+
+
+Overall Implementation of T1:
+1. Data Loading:
+    Load data from drivers.csv and passengers.csv into two separate lists, ensuring timestamps are correctly parsed.
+    --> ref: reading_in_drivers.py, reading_in_passengers.py -> utilizes findingNearestVertex.py
+
+2. Queue Initialization:
+    Initialize two queues: one for available drivers and one for unmatched passengers.
+    The queues will store the timestamps from the CSV files, maintaining the order (earliest time first).
+    --> loading_drivers_and_passengers.py
+
+2b. Graph Initialization:
+    --> createGraphs.py
+
+3. Matching Algorithm:
+    Implement the matching logic where the longest waiting passenger (earliest timestamp in the passengers queue) is assigned to the first available driver (earliest timestamp in the drivers queue).
+    --> matchAPassengerAndDriver() in T1.py
+        a. Remove matched passengers and drivers from their respective queues.
+        b. return a list of two - first item is the Driver(), second item is the Passenger()
+        c. this list will be used as input into the executeRide function
+    
+
+4. Execute the "ride":
+    --> executeRide.py
+    The driver drives to the passenger, drives to the requested drop-off location with passenger, and then drops-off passenger.
+    At this point, the driver (with the new time stamp and lat/lon location) gets pushed on to the driver queue.
+
+5. Performance Metrics:
+    In a dataframe called "RidesExecuted", calculate and record the key performance metrics for the three desiderata:
+    D1 - Wait Time: Calculate the time difference between when a passenger starts looking for a ride and when they are dropped off.
+    D2 - Driver Profit: (Time spent driving passenger from pickup to drop-off location) -- (Time spent for driver, getting to the pickup location prior to picking up the passenger)
+    D3 - Efficiency/Scalability: Measure the algorithm's execution time and resource usage as proxies for efficiency and scalability.
