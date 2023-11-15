@@ -1,0 +1,20 @@
+DESIDERATA
+
+- D1. Passengers want to be dropped off asap - minimize the amount of time (in minutes) between when they appear as an unmatched passenger, and when they are dropped off at their destination.
+
+- D2. Drivers want to maximize ride profit, defined as the number of minutes they spend driving passengers from pickup to drop-off locations minus the number of minutes they spend driving to pickup passengers.
+(For simplicity, there is no penalty for the time when a driver is idle.)
+
+- D3. Your algorithms should be empirically efficient and scalable. You should try to optimize these deisderata subject to the following constraints C1-C3.
+
+
+
+
+
+CONSTRAINTS
+
+- C1. A driver can only have one passenger onboard at any given time.
+
+- C2. Passengers can only be picked up or dropped off at their requested pickup and drop-off locations.
+
+- C3. Once you assign a driver to a passenger, that match continues until the passenger is dropped off at their correct location - matches made by your algorithm cannot be canceled.
