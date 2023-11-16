@@ -4,12 +4,14 @@ from createGraph import *
 from datetime import timedelta
 import csv
 
+from djikstra import *
+
 # 1. load data and initialize passenger priority queue and driver priority queue using loading_drivers_and_passengers.py)
 passengersHeap_PQ = read_passengers_csv('givenDataFromSakai/passengers.csv')
 driversHeap_PQ = read_drivers_csv('givenDataFromSakai/drivers.csv')
 
 #2. load the graph
-graphs = createGraph()
+graphToUse = createGraph()
 
 # 3. initializing metricsRecorded, which we'll use to talk about efficiency in the .pdf report we'll submit on Gradescope or something
 metricsRecorded = [] # each item in metricsRecorded should contain a list that is: [timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff, timeItTookForPassengerToGoFromUnmatchedToDroppedOff]
@@ -56,7 +58,7 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
     # thePassenger's properties: timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID
     # theDriver's properties: timestamp, lat, lon, driverLocationVertexID
 
-
+    '''
     # Extract day of the week and hour from the timestamp
     day_of_week = theDriver.timestamp.weekday()  # Monday is 0 and Sunday is 6
     hour = theDriver.timestamp.hour # getting .hour shouldn't need parentheses while getting weekday does need 'em
@@ -66,12 +68,19 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
         timeCategory = f"weekend_{hour}"
 
     graphToUse = graphs[timeCategory]
+    '''
+
+
+
+    day_of_week = theDriver.timestamp.weekday()
+    hour = theDriver.timestamp.hour
+
     
     driverStartingNodeID = theDriver.driverLocationVertexID
     passengerWillBePickedUpHereNodeID = thePassenger.pickUpLocationVertexID
     passengerWillBeDroppedOffHereNodeID = thePassenger.dropOffLocationVertexID
 
-    
+    '''
     # calculate and store how long it will take for theDriver to get to thePassenger, in units of hours
     timeItTookForDriverToGetToPassenger = nx.shortest_path_length(
         graphToUse, 
@@ -88,6 +97,24 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
         source=passengerWillBePickedUpHereNodeID, 
         target=passengerWillBeDroppedOffHereNodeID, 
         weight='weight'
+    )
+    '''
+
+    # Calculate the travel times
+    timeItTookForDriverToGetToPassenger = dijkstra_shortest_path(
+        graphToUse, 
+        driverStartingNodeID, 
+        passengerWillBePickedUpHereNodeID,
+        day_of_week,
+        hour
+    )
+
+    timeItTookFromPickupToDropoff = dijkstra_shortest_path(
+        graphToUse, 
+        passengerWillBePickedUpHereNodeID, 
+        passengerWillBeDroppedOffHereNodeID,
+        day_of_week,
+        hour
     )
     
 
@@ -162,11 +189,13 @@ def summarizeT1result(outputOfTheT1Algo):
     with open('T1_summary.csv', 'w', newline='') as file:
         writer = csv.writer(file)
 
-        # Write D1list as the first row
-        writer.writerow(D1list)
+        # Write headers
+        writer.writerow(['D1: timeItTookForPassengerToGoFromUnmatchedToDroppedOff (mins)', 
+                         'D2: number of minutes they spend driving passengers from pickup to drop-off locations minus the number of minutes they spend driving to pickup passengers'])
 
-        # Write D2list as the second row
-        writer.writerow(D2list)
+         # Write data rows
+        for d1, d2 in zip(D1list, D2list):
+            writer.writerow([d1, d2])
 
 
 
