@@ -18,16 +18,12 @@ def find_nearest_node(lat, lon, nodes):
             min_distance = distance
             nearest_node = node_id
     nearest_node = str(nearest_node)
-    print(f"Nearest node to ({lat}, {lon}) is {nearest_node} with distance {min_distance}")
-    
     return nearest_node
 
 def euclidean_distance(node_id1, node_id2, nodes):
     x1, y1 = nodes[node_id1]['lat'], nodes[node_id1]['lon']
     x2, y2 = nodes[node_id2]['lat'], nodes[node_id2]['lon']
-    res = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-    # print(f"The calculated euclidean distance from node {node_id1} to node {node_id2} is {res}")
-    return res
+    return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
 def a_star(start_id, target_id, graph, start_time, nodes):
     open_set = []
@@ -61,24 +57,34 @@ def a_star(start_id, target_id, graph, start_time, nodes):
 
     return float('inf')
 
-
 # Assigning Rides and Calculating Path
 def assign_rides_and_calculate_paths(driver_queue, rider_queue, graph, nodes):
     results = []
+    total_time_to_pickup = 0
+    total_drive_time = 0
+    total_wait_and_drive_time = 0
+    total_driver_drive_time = 0
+    num_rides = 0
 
     while driver_queue.queue and rider_queue.queue:
         driver = driver_queue.popLongestWaitingDriver()
-        rider = rider_queue.popLongestWaitingRider()  # Corrected riderQueue to rider_queue
+        rider = rider_queue.popLongestWaitingRider()
 
         driver_node = find_nearest_node(driver.sourceX, driver.sourceY, nodes)
         pickup_node = find_nearest_node(rider.sourceX, rider.sourceY, nodes)
         dropoff_node = find_nearest_node(rider.destX, rider.destY, nodes)
 
-        print(f"Assigning ride: Driver at Node {driver_node}, Pickup at Node {pickup_node}, Dropoff at Node {dropoff_node}")
-
         # Calculate travel times using A*
         time_to_pickup = a_star(driver_node, pickup_node, graph, driver.requestTime, nodes)
         time_to_dropoff = a_star(pickup_node, dropoff_node, graph, rider.requestTime, nodes)
+
+        wait_time = (rider.requestTime - driver.requestTime).total_seconds() / 60
+        total_drive_time += time_to_dropoff
+        total_time_to_pickup += time_to_pickup
+        total_wait_and_drive_time += wait_time + time_to_dropoff
+        total_driver_drive_time += time_to_dropoff - time_to_pickup
+
+        num_rides += 1
 
         results.append({
             "driver": driver,
@@ -87,10 +93,15 @@ def assign_rides_and_calculate_paths(driver_queue, rider_queue, graph, nodes):
             "time_to_dropoff": time_to_dropoff
         })
 
-    return results
+    average_time_to_pickup = total_time_to_pickup / num_rides if num_rides > 0 else 0
+    average_drive_time = total_drive_time / num_rides if num_rides > 0 else 0
+    average_total_time = total_wait_and_drive_time / num_rides if num_rides > 0 else 0
+    average_driver_drive_time = total_driver_drive_time / num_rides if num_rides > 0 else 0
+
+    return results, average_time_to_pickup, average_drive_time, average_total_time, average_driver_drive_time
 
 # Execute Ride Assignments
-ride_assignments = assign_rides_and_calculate_paths(driverQueue, riderQueue, graph, nodes)
+ride_assignments, avg_time_to_pickup, avg_drive_time, avg_total_time, avg_driver_drive_time = assign_rides_and_calculate_paths(driverQueue, riderQueue, graph, nodes)
 
 # Output the assignments and travel times for review
 for assignment in ride_assignments:
@@ -98,3 +109,10 @@ for assignment in ride_assignments:
     rider = assignment["rider"]
     print(f"Driver at ({driver.sourceX}, {driver.sourceY}) assigned to Rider from ({rider.sourceX}, {rider.sourceY}) to ({rider.destX}, {rider.destY}) at {rider.requestTime}")
     print(f"Time to pickup: {assignment['time_to_pickup']} minutes, Time to dropoff: {assignment['time_to_dropoff']} minutes")
+
+# Print the averages
+print(f"\nAverage Times:")
+print(f"Average time for passengers to be picked up: {avg_time_to_pickup} minutes")
+print(f"Average drive time for passengers: {avg_drive_time} minutes")
+print(f"Average total time for passengers (waiting to dropped off): {avg_total_time} minutes")
+print(f"Average drive time for drivers (from passenger pickup to dropoff): {avg_driver_drive_time} minutes")
