@@ -90,50 +90,52 @@ with open('./data/edges.csv', 'r') as file:
 
         edges.append((start_id, end_id, length, weekdays, weekends))
 
-import math
-import heapq
-from datetime import timedelta
-
-def calculate_travel_times(length, speeds):
-    return [length / speed if speed != 0 else float('inf') for speed in speeds]
-
-graph = {}
-
-for start, end, length, weekdays, weekends in edges:
-    start_str, end_str = str(start), str(end)
-    forward_weekday_times = calculate_travel_times(length, weekdays[:24])
-    forward_weekend_times = calculate_travel_times(length, weekends[:24])
-
-    if start_str not in graph:
-        graph[start_str] = []
-    graph[start_str].append((end_str, forward_weekday_times, forward_weekend_times))
-
-    reverse_weekday_times = calculate_travel_times(length, weekdays[24:])
-    reverse_weekend_times = calculate_travel_times(length, weekends[24:])
-
-    if end_str not in graph:
-        graph[end_str] = []
-    graph[end_str].append((start_str, reverse_weekday_times, reverse_weekend_times))
-
-print(f"Total number of nodes in the graph: {len(graph)}")
-
-def get_edge_weight(current_time, edge):
-    neighbor_id, weekday_times, weekend_times = edge
-    hour = current_time.hour
 
 
-    if current_time.weekday() < 5:  # Weekday
-        if hour < len(weekday_times):
-            travel_time = weekday_times[hour]
-        else:
-            return None  # Safeguard against index out of range
-    else:  # Weekend
-        if hour < len(weekend_times):
-            travel_time = weekend_times[hour]
-        else:
-            return None  # Safeguard against index out of range
+# import math
+# import heapq
+# from datetime import timedelta
 
-    return travel_time if travel_time != float('inf') else None
+# def calculate_travel_times(length, speeds):
+#     return [length / speed if speed != 0 else float('inf') for speed in speeds]
+
+# graph = {}
+
+# for start, end, length, weekdays, weekends in edges:
+#     start_str, end_str = str(start), str(end)
+#     forward_weekday_times = calculate_travel_times(length, weekdays[:24])
+#     forward_weekend_times = calculate_travel_times(length, weekends[:24])
+
+#     if start_str not in graph:
+#         graph[start_str] = []
+#     graph[start_str].append((end_str, forward_weekday_times, forward_weekend_times))
+
+#     reverse_weekday_times = calculate_travel_times(length, weekdays[24:])
+#     reverse_weekend_times = calculate_travel_times(length, weekends[24:])
+
+#     if end_str not in graph:
+#         graph[end_str] = []
+#     graph[end_str].append((start_str, reverse_weekday_times, reverse_weekend_times))
+
+# print(f"Total number of nodes in the graph: {len(graph)}")
+
+# def get_edge_weight(current_time, edge):
+#     neighbor_id, weekday_times, weekend_times = edge
+#     hour = current_time.hour
+
+
+#     if current_time.weekday() < 5:  # Weekday
+#         if hour < len(weekday_times):
+#             travel_time = weekday_times[hour]
+#         else:
+#             return None  # Safeguard against index out of range
+#     else:  # Weekend
+#         if hour < len(weekend_times):
+#             travel_time = weekend_times[hour]
+#         else:
+#             return None  # Safeguard against index out of range
+
+#     return travel_time if travel_time != float('inf') else None
 
 
 
@@ -141,26 +143,26 @@ def get_edge_weight(current_time, edge):
 # for node, edges in graph.items():
 #     print(f"Node {node}: {edges}")
 
-def check_bidirectional_edges(graph):
-    missing_edges = []
-    for start_node, edges in graph.items():
-        for edge in edges:
-            end_node = edge[0]
-            reverse_edge_found = False
-            for reverse_edge in graph.get(end_node, []):
-                if reverse_edge[0] == start_node:
-                    reverse_edge_found = True
-                    break
-            if not reverse_edge_found:
-                missing_edges.append((start_node, end_node))
-    return missing_edges
+# def check_bidirectional_edges(graph):
+#     missing_edges = []
+#     for start_node, edges in graph.items():
+#         for edge in edges:
+#             end_node = edge[0]
+#             reverse_edge_found = False
+#             for reverse_edge in graph.get(end_node, []):
+#                 if reverse_edge[0] == start_node:
+#                     reverse_edge_found = True
+#                     break
+#             if not reverse_edge_found:
+#                 missing_edges.append((start_node, end_node))
+#     return missing_edges
 
-# Check for missing edges after constructing the graph
-missing_edges = check_bidirectional_edges(graph)
-if missing_edges:
-    print("Missing reverse edges:", missing_edges)
-else:
-    print("All edges are bidirectional.")
+# # Check for missing edges after constructing the graph
+# missing_edges = check_bidirectional_edges(graph)
+# if missing_edges:
+#     print("Missing reverse edges:", missing_edges)
+# else:
+#     print("All edges are bidirectional.")
 
 
 
