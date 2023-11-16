@@ -9,6 +9,8 @@ def T1():
     r = riderQueue.queue.pop(0)
 
     print(d,r)
+    
+T1()
 
 def T2():
     tree = KDTree(2)
