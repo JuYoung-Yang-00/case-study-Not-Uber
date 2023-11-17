@@ -20,7 +20,8 @@ metricsRecorded = [] # each item in metricsRecorded should contain a list that i
 # HELPER FUNCTION
 def matchAPassengerAndDriver(passenger_heap_pq, driver_heap_pq):
     longestWaitingPassenger = heapq.heappop(passenger_heap_pq)
-
+    matchedDriver = heapq.heappop(driver_heap_pq)
+    '''
     tempDrivers = []  # To store drivers temporarily
     matchedDriver = None
     while driver_heap_pq and not matchedDriver:
@@ -33,6 +34,7 @@ def matchAPassengerAndDriver(passenger_heap_pq, driver_heap_pq):
     # Push back the drivers that were popped out
     for driver in tempDrivers:
         heapq.heappush(driver_heap_pq, driver)
+    '''
 
 
     if matchedDriver:
@@ -97,6 +99,7 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
         source=passengerWillBePickedUpHereNodeID, 
         target=passengerWillBeDroppedOffHereNodeID, 
         weight='weight'
+        
     )
     '''
 
@@ -121,7 +124,8 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
 
     # passenger became available later than driver became available
     if thePassenger.timestamp - theDriver.timestamp > timedelta(0):
-        timeItTookForPassengerToGoFromUnmatchedToDroppedOff = timeItTookForDriverToGetToPassenger + timeItTookFromPickupToDropoff # all in unit of hours
+        timeItTookForPassengerToGoFromUnmatchedToDroppedOff = timeItTookForDriverToGetToPassenger + timeItTookFromPickupToDropoff
+    # passenger became available before the driveer became avilable
     else:
         timeItTookForPassengerToGoFromUnmatchedToDroppedOff = ( (theDriver.timestamp - thePassenger.timestamp).total_seconds() / 3600 ) + timeItTookForDriverToGetToPassenger + timeItTookFromPickupToDropoff
     
