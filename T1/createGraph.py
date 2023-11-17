@@ -74,7 +74,7 @@ def calculate_travel_times(length, speeds):
     # Avoid division by zero in case of speed being zero
     return [length / speed if speed > 0 else float('inf') for speed in speeds] #hours
 
-
+'''
 def get_edge_weight(current_time, edge):
     hour = current_time.hour
     if current_time.weekday() < 5:  # Weekday
@@ -82,6 +82,8 @@ def get_edge_weight(current_time, edge):
     else:  # Weekend
         travel_time = edge[2][hour]
     return travel_time
+'''
+
 
 
 #creating the actual graph
@@ -119,4 +121,7 @@ def createGraph():
     
     print(f"GRAPH is created now, which has {len(graph)} nodes")
     return graph
+
+
+
 
