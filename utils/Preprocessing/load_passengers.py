@@ -4,7 +4,7 @@ import heapq
 
 import json
 
-from findingNearestVertex import *
+from utils.findNearestVertex import *
 
 class Passenger:
     def __init__(self, timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID):
@@ -28,7 +28,7 @@ class Passenger:
 
 
 # Load your node data from JSON file
-with open('givenDataFromSakai/node_data.json', 'r') as f:
+with open('./data/node_data.json', 'r') as f:
     node_data = json.load(f)
 
 

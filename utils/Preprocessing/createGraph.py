@@ -90,7 +90,7 @@ def get_edge_weight(current_time, edge):
 def createGraph():
     edges = []
     graph = {}
-    with open('givenDataFromSakai/edges.csv', 'r') as file:
+    with open('./data/edges.csv', 'r') as file:
         csv_reader = csv.reader(file)
         next(csv_reader)  # Skip the header row
     
@@ -106,7 +106,7 @@ def createGraph():
 
             edges.append((start_id, end_id, length, weekdays, weekends))
             n = n+1
-            print(f"edge # {n} appended to edges[]")
+            # print(f"edge # {n} appended to edges[]")
 
 
     

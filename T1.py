@@ -1,100 +1,60 @@
-# T1.py
-from lib import *
-import math
-import heapq
-from datetime import datetime, timedelta
+from utils.Preprocessing.load_drivers import *
+from utils.Preprocessing.load_passengers import *
+from utils.Preprocessing.createGraph import *
+from utils.execute_ride import *
+from utils.summarizeResult import *
+from utils.SearchAlgo.djikstra import *
 
-# Helper Functions
-def calculate_euclidean_distance(coord1, coord2):
-    return math.sqrt((coord1[0] - coord2[0])**2 + (coord1[1] - coord2[1])**2)
 
-def find_nearest_node(lat, lon, nodes):
-    min_distance = float('inf')
-    nearest_node = None
+# HELPER FUNCTION
+def matchAPassengerAndDriver(passenger_heap_pq, driver_heap_pq):
+    longestWaitingPassenger = heapq.heappop(passenger_heap_pq)
+    matchedDriver = heapq.heappop(driver_heap_pq)
+    '''
+    tempDrivers = []  # To store drivers temporarily
+    matchedDriver = None
+    while driver_heap_pq and not matchedDriver:
+        firstAvailableDriver = heapq.heappop(driver_heap_pq)
+        if longestWaitingPassenger.timestamp <= firstAvailableDriver.timestamp:
+            matchedDriver = firstAvailableDriver
+        else:
+            tempDrivers.append(firstAvailableDriver)
 
-    for node_id, node_info in nodes.items():
-        distance = calculate_euclidean_distance((lat, lon), (node_info['lat'], node_info['lon']))
-        if distance < min_distance:
-            min_distance = distance
-            nearest_node = node_id
-    nearest_node = str(nearest_node)
-    print(f"Nearest node to ({lat}, {lon}) is {nearest_node} with distance {min_distance}")
+    # Push back the drivers that were popped out
+    for driver in tempDrivers:
+        heapq.heappush(driver_heap_pq, driver)
+    '''
+
+    if matchedDriver:
+        print(len(passenger_heap_pq)) #should be 5001 after the very first match
+        print(len(driver_heap_pq)) #should be 498 after the very first math
+        toReturn = [longestWaitingPassenger, matchedDriver]
+        #print(toReturn)
+        return toReturn
+    else:
+        # Re-insert the passenger if no matching driver is found
+        heapq.heappush(passenger_heap_pq, longestWaitingPassenger)
+        return None
+
+
+
+## THE T1 ALGO
+def T1(passengersHeap_PQ, driversHeap_PQ):
+    # passengersHeap_PQ, driversHeap_PQ, graphs, and metricsRecorded is already initialized
+    n = 0
+    while (passengersHeap_PQ): #is not empty
+        pasengerAndDriver = matchAPassengerAndDriver(passengersHeap_PQ, driversHeap_PQ)
+        executeRide(pasengerAndDriver)
+        n = n+1
+        print(f"{n} rides executed")
     
-    return nearest_node
 
-def euclidean_distance(node_id1, node_id2, nodes):
-    x1, y1 = nodes[node_id1]['lat'], nodes[node_id1]['lon']
-    x2, y2 = nodes[node_id2]['lat'], nodes[node_id2]['lon']
-    res = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-    # print(f"The calculated euclidean distance from node {node_id1} to node {node_id2} is {res}")
-    return res
-
-def a_star(start_id, target_id, graph, start_time, nodes):
-    open_set = []
-    heapq.heappush(open_set, (0, start_id, start_time, 0))
-    came_from = {}
-    g_score = {node: float('inf') for node in nodes}
-    g_score[start_id] = 0
-
-    while open_set:
-        _, current, current_time, current_g = heapq.heappop(open_set)
-
-        if current == target_id:
-            return current_g
-
-        if current not in graph:
-            continue
-
-        for neighbor_data in graph[current]:
-            neighbor_id, _, _ = neighbor_data
-            edge_weight = get_edge_weight(current_time, neighbor_data)
-            if edge_weight is None:  
-                continue
-
-            tentative_g_score = current_g + edge_weight
-            if tentative_g_score < g_score.get(neighbor_id, float('inf')):
-                came_from[neighbor_id] = current
-                g_score[neighbor_id] = tentative_g_score
-                new_time = current_time + timedelta(minutes=edge_weight)
-                f_score = tentative_g_score + euclidean_distance(neighbor_id, target_id, nodes)
-                heapq.heappush(open_set, (f_score, neighbor_id, new_time, tentative_g_score))
-
-    return float('inf')
+    # now that passengersHeap_PQ is empty,
+    print(metricsRecorded)
+    return metricsRecorded
 
 
-# Assigning Rides and Calculating Path
-def assign_rides_and_calculate_paths(driver_queue, rider_queue, graph, nodes):
-    results = []
 
-    while driver_queue.queue and rider_queue.queue:
-        driver = driver_queue.popLongestWaitingDriver()
-        rider = rider_queue.popLongestWaitingRider()  # Corrected riderQueue to rider_queue
 
-        driver_node = find_nearest_node(driver.sourceX, driver.sourceY, nodes)
-        pickup_node = find_nearest_node(rider.sourceX, rider.sourceY, nodes)
-        dropoff_node = find_nearest_node(rider.destX, rider.destY, nodes)
-
-        print(f"Assigning ride: Driver at Node {driver_node}, Pickup at Node {pickup_node}, Dropoff at Node {dropoff_node}")
-
-        # Calculate travel times using A*
-        time_to_pickup = a_star(driver_node, pickup_node, graph, driver.requestTime, nodes)
-        time_to_dropoff = a_star(pickup_node, dropoff_node, graph, rider.requestTime, nodes)
-
-        results.append({
-            "driver": driver,
-            "rider": rider,
-            "time_to_pickup": time_to_pickup,
-            "time_to_dropoff": time_to_dropoff
-        })
-
-    return results
-
-# Execute Ride Assignments
-ride_assignments = assign_rides_and_calculate_paths(driverQueue, riderQueue, graph, nodes)
-
-# Output the assignments and travel times for review
-for assignment in ride_assignments:
-    driver = assignment["driver"]
-    rider = assignment["rider"]
-    print(f"Driver at ({driver.sourceX}, {driver.sourceY}) assigned to Rider from ({rider.sourceX}, {rider.sourceY}) to ({rider.destX}, {rider.destY}) at {rider.requestTime}")
-    print(f"Time to pickup: {assignment['time_to_pickup']} minutes, Time to dropoff: {assignment['time_to_dropoff']} minutes")
+simulation = T1(passengersHeap_PQ, driversHeap_PQ)
+summarizeResult(simulation)
