@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 import heapq
 
-from findingNearestVertex import *
+from utils.findNearestVertex import *
 
 class Driver:
     def __init__(self, timestamp, lat, lon, driverLocationVertexID):
@@ -23,7 +23,7 @@ class Driver:
 
 
 # Load your node data from JSON file
-with open('givenDataFromSakai/node_data.json', 'r') as f:
+with open('./data/node_data.json', 'r') as f:
     node_data = json.load(f)
 
 def read_drivers_csv(file_name):
