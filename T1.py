@@ -6,6 +6,17 @@ from utils.summarizeResult import *
 from utils.SearchAlgo.djikstra import *
 
 
+# 1. load data and initialize passenger priority queue and driver priority queue using loading_drivers_and_passengers.py)
+passengersHeap_PQ = read_passengers_csv('./data/passengers.csv')
+driversHeap_PQ = read_drivers_csv('./data/drivers.csv')
+
+#2. load the graph
+graphToUse = createGraph()
+
+# 3. initializing metricsRecorded, which we'll use to talk about efficiency in the .pdf report we'll submit on Gradescope or something
+metricsRecorded = [] # each item in metricsRecorded should contain a list that is: [timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff, timeItTookForPassengerToGoFromUnmatchedToDroppedOff]
+
+
 # HELPER FUNCTION
 def matchAPassengerAndDriver(passenger_heap_pq, driver_heap_pq):
     longestWaitingPassenger = heapq.heappop(passenger_heap_pq)

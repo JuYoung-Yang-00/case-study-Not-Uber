@@ -3,32 +3,21 @@ from utils.Preprocessing.load_drivers import *
 from utils.Preprocessing.load_passengers import *
 from utils.Preprocessing.createGraph import *
 from utils.SearchAlgo.djikstra import *
-
 import random
 from datetime import timedelta
 
 
-# 1. load data and initialize passenger priority queue and driver priority queue using loading_drivers_and_passengers.py)
-passengersHeap_PQ = read_passengers_csv('./data/passengers.csv')
-driversHeap_PQ = read_drivers_csv('./data/drivers.csv')
 
-#2. load the graph
-graphToUse = createGraph()
-
-# 3. initializing metricsRecorded, which we'll use to talk about efficiency in the .pdf report we'll submit on Gradescope or something
-metricsRecorded = [] # each item in metricsRecorded should contain a list that is: [timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff, timeItTookForPassengerToGoFromUnmatchedToDroppedOff]
-
-
-# 4. Dictionary of probabilities that a driver works based on time category
+# Dictionary of probabilities that a driver works based on time category
 driver_working_probabilities = {
-        "weekday_0_8": 0.7,  
-        "weekday_9_12": 0.8, 
-        "weekday_13_20": 0.9,
-        "weekday_21_24": 0.8,
-        "weekend_0_8": 0.5, 
-        "weekend_9_12": 0.6,
-        "weekend_13_20": 0.7,
-        "weekend_21_24": 0.6 
+        "weekday_0_8": 0.9,  
+        "weekday_9_12": 0.95, 
+        "weekday_13_20": 0.98,
+        "weekday_21_24": 0.95,
+        "weekend_0_8": 0.8, 
+        "weekend_9_12": 0.85,
+        "weekend_13_20": 0.9,
+        "weekend_21_24": 0.85 
 }
 
 
@@ -81,7 +70,7 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
         
     )
     '''
-
+    from T1 import graphToUse, metricsRecorded, driversHeap_PQ
     # Calculate the travel times
     timeItTookForDriverToGetToPassenger = dijkstra_shortest_path(
         graphToUse, 
