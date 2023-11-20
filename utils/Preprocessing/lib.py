@@ -92,50 +92,51 @@ with open('./data/edges.csv', 'r') as file:
 
 
 
-# import math
-# import heapq
-# from datetime import timedelta
+# MAY OR MAY NOT USE CODE BELOW
+import math
+import heapq
+from datetime import timedelta
 
-# def calculate_travel_times(length, speeds):
-#     return [length / speed if speed != 0 else float('inf') for speed in speeds]
+def calculate_travel_times(length, speeds):
+    return [length / speed if speed != 0 else float('inf') for speed in speeds]
 
-# graph = {}
+graph = {}
 
-# for start, end, length, weekdays, weekends in edges:
-#     start_str, end_str = str(start), str(end)
-#     forward_weekday_times = calculate_travel_times(length, weekdays[:24])
-#     forward_weekend_times = calculate_travel_times(length, weekends[:24])
+for start, end, length, weekdays, weekends in edges:
+    start_str, end_str = str(start), str(end)
+    forward_weekday_times = calculate_travel_times(length, weekdays[:24])
+    forward_weekend_times = calculate_travel_times(length, weekends[:24])
 
-#     if start_str not in graph:
-#         graph[start_str] = []
-#     graph[start_str].append((end_str, forward_weekday_times, forward_weekend_times))
+    if start_str not in graph:
+        graph[start_str] = []
+    graph[start_str].append((end_str, forward_weekday_times, forward_weekend_times))
 
-#     reverse_weekday_times = calculate_travel_times(length, weekdays[24:])
-#     reverse_weekend_times = calculate_travel_times(length, weekends[24:])
+    reverse_weekday_times = calculate_travel_times(length, weekdays[24:])
+    reverse_weekend_times = calculate_travel_times(length, weekends[24:])
 
-#     if end_str not in graph:
-#         graph[end_str] = []
-#     graph[end_str].append((start_str, reverse_weekday_times, reverse_weekend_times))
+    if end_str not in graph:
+        graph[end_str] = []
+    graph[end_str].append((start_str, reverse_weekday_times, reverse_weekend_times))
 
-# print(f"Total number of nodes in the graph: {len(graph)}")
+print(f"Total number of nodes in the graph: {len(graph)}")
 
-# def get_edge_weight(current_time, edge):
-#     neighbor_id, weekday_times, weekend_times = edge
-#     hour = current_time.hour
+def get_edge_weight(current_time, edge):
+    neighbor_id, weekday_times, weekend_times = edge
+    hour = current_time.hour
 
 
-#     if current_time.weekday() < 5:  # Weekday
-#         if hour < len(weekday_times):
-#             travel_time = weekday_times[hour]
-#         else:
-#             return None  # Safeguard against index out of range
-#     else:  # Weekend
-#         if hour < len(weekend_times):
-#             travel_time = weekend_times[hour]
-#         else:
-#             return None  # Safeguard against index out of range
+    if current_time.weekday() < 5:  # Weekday
+        if hour < len(weekday_times):
+            travel_time = weekday_times[hour]
+        else:
+            return None  # Safeguard against index out of range
+    else:  # Weekend
+        if hour < len(weekend_times):
+            travel_time = weekend_times[hour]
+        else:
+            return None  # Safeguard against index out of range
 
-#     return travel_time if travel_time != float('inf') else None
+    return travel_time if travel_time != float('inf') else None
 
 
 

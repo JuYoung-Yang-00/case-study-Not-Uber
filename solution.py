@@ -1,5 +1,5 @@
-from T3.lib import *
-from T3.kdtree import KDTree
+from utils.Preprocessing.lib import *
+from utils.kdtree import KDTree
 
 def T1():
     driverQueue.queue.sort(key=lambda x: x.requestTime)
