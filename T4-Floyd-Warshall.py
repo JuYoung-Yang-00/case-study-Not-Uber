@@ -1,6 +1,6 @@
-from APSPPathfinder import Precompute_Pathfinder
-from dataloader import load_data
-from NearestNodeFinder import NearestNodeFinder
+from utils.SearchAlgo.APSPPathfinder import Precompute_Pathfinder
+from utils.Preprocessing.AllDataLoader import load_data
+from utils.NearestNodeFinder import NearestNodeFinder
 import time
 
 '''
@@ -23,7 +23,7 @@ for vertex_count in range(1000,30000,1000):
     nnf = NearestNodeFinder(nodes)
 
     # initialize the shortest path lookup helper class
-    pf = Precompute_Pathfinder(f"T3/rustAPSP/data/shortest_path_costs_{vertex_count}.csv")
+    pf = Precompute_Pathfinder(f"rustAPSP/data/shortest_path_costs_{vertex_count}.csv")
 
     start_time = time.time()
 

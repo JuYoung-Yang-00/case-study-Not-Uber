@@ -10,6 +10,7 @@ class Driver:
     requestTime: datetime
     sourceX: float
     sourceY: float
+    sourceVertexId: int
 
 @dataclass
 class Rider:
@@ -18,6 +19,8 @@ class Rider:
     sourceY: float
     destX: float
     destY: float
+    sourceVertexId: int
+    destVertexId: int
 
 class DriverQueue:
     def __init__(self):
@@ -51,7 +54,7 @@ def load_data(drivers_filepath: str, riders_filepath: str, nodes_filepath: str, 
             request_time = datetime.strptime(date_time_str, '%m/%d/%Y %H:%M:%S')
             source_x = float(lon_str)
             source_y = float(lat_str)
-            driver = Driver(requestTime=request_time, sourceX=source_x, sourceY=source_y)
+            driver = Driver(requestTime=request_time, sourceX=source_x, sourceY=source_y, sourceVertexId=None)
             driver_queue.queue.append(driver)
 
     rider_queue = RiderQueue()
@@ -68,7 +71,7 @@ def load_data(drivers_filepath: str, riders_filepath: str, nodes_filepath: str, 
             source_y = float(s_lat_str)
             dest_x = float(t_lon_str)
             dest_y = float(t_lat_str)
-            rider = Rider(requestTime=request_time, sourceX=source_x, sourceY=source_y, destX=dest_x, destY=dest_y)
+            rider = Rider(requestTime=request_time, sourceX=source_x, sourceY=source_y, destX=dest_x, destY=dest_y, destVertexId=None, sourceVertexId=None)
             rider_queue.queue.append(rider)
 
     nodes = {}
