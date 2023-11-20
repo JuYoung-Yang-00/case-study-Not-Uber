@@ -1,0 +1,65 @@
+nodefile_path: ../../data/modified_node_data_1000.json
+starting...
+data loaded
+vertex_count: 1000
+Floyd-Warshall Algorithm Starting with vertex count 1000
+Floyd-Warshall Algorithm Complete
+node count 1000, duration: 1.96s
+nodefile_path: ../../data/modified_node_data_2000.json
+starting...
+data loaded
+vertex_count: 2000
+Floyd-Warshall Algorithm Starting with vertex count 2000
+Floyd-Warshall Algorithm Complete
+node count 2000, duration: 15.55s
+nodefile_path: ../../data/modified_node_data_3000.json
+starting...
+data loaded
+vertex_count: 3000
+Floyd-Warshall Algorithm Starting with vertex count 3000
+Floyd-Warshall Algorithm Complete
+node count 3000, duration: 38.93s
+nodefile_path: ../../data/modified_node_data_4000.json
+starting...
+data loaded
+vertex_count: 4000
+Floyd-Warshall Algorithm Starting with vertex count 4000
+Floyd-Warshall Algorithm Complete
+node count 4000, duration: 88.46s
+nodefile_path: ../../data/modified_node_data_5000.json
+starting...
+data loaded
+vertex_count: 5000
+Floyd-Warshall Algorithm Starting with vertex count 5000
+Floyd-Warshall Algorithm Complete
+node count 5000, duration: 169.67s
+nodefile_path: ../../data/modified_node_data_6000.json
+starting...
+data loaded
+vertex_count: 6000
+Floyd-Warshall Algorithm Starting with vertex count 6000
+Floyd-Warshall Algorithm Complete
+node count 6000, duration: 296.49s
+nodefile_path: ../../data/modified_node_data_7000.json
+starting...
+data loaded
+vertex_count: 7000
+Floyd-Warshall Algorithm Starting with vertex count 7000
+Floyd-Warshall Algorithm Complete
+node count 7000, duration: 465.49s
+nodefile_path: ../../data/modified_node_data_8000.json
+starting...
+data loaded
+vertex_count: 8000
+Floyd-Warshall Algorithm Starting with vertex count 8000
+Floyd-Warshall Algorithm Complete
+node count 8000, duration: 678.17s
+nodefile_path: ../../data/modified_node_data_9000.json
+starting...
+data loaded
+vertex_count: 9000
+Floyd-Warshall Algorithm Starting with vertex count 9000
+Floyd-Warshall Algorithm Complete
+node count 9000, duration: 949.07s
+nodefile_path: ../../data/modified_node_data_10000.json
+starting...

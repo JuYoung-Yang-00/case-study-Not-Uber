@@ -123,7 +123,7 @@ class GraphReducer:
 gr = GraphReducer(node_filepath='./data/node_data.json', edges_filepath='./data/edges.csv')
 
 # for 1000, 2000, ..., 10,000
-for n in range(1000, 10000, 1000):
+for n in range(20000, 50000, 1000):
 
     # Remove vertices and edges while maintaining connectivity
     gr.remove_vertices_and_edges(n)

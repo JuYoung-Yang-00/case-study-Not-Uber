@@ -1,3 +1,4 @@
+
 class Node:
     def __init__(self, point, index, left=None, right=None):
         self.point = point
@@ -65,3 +66,25 @@ class KDTree:
     @staticmethod
     def _euclidean_distance(p1, p2):
         return sum((x - y) ** 2 for x, y in zip(p1, p2)) ** 0.5
+
+
+### Nearest Node finder Implementation
+class NearestNodeFinder:
+    def __init__(self, nodes): 
+        self.tree = KDTree(2)
+
+        node_coordinates = []
+        i = 0
+        self.node_id_mapping = {}
+        for node_id, (x, y) in nodes.items():
+            node_coordinates.append((x, y))
+            self.node_id_mapping[i] = node_id
+            i += 1
+        for i, node_coordinate in enumerate(node_coordinates):
+            self.tree.insert(node_coordinate, i)
+    
+    def find_nearest_node(self, sourceX, sourceY, nodes):
+        
+        minDistance, (n_idx, _) = self.tree.find_min_distance([(sourceX, sourceY)])
+        # print(self.node_id_mapping[n_idx], " has min distance ", minDistance)
+        return self.node_id_mapping[n_idx] 
