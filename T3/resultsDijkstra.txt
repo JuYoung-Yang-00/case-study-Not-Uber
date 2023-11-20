@@ -1,0 +1,87 @@
+loading data
+finished loading data
+vertex_count: 1000, driver count: 10, rider count: 10, 0.1566019058227539 seconds to complete.
+loading data
+finished loading data
+vertex_count: 2000, driver count: 10, rider count: 10, 0.3465542793273926 seconds to complete.
+loading data
+finished loading data
+vertex_count: 3000, driver count: 10, rider count: 10, 0.5269780158996582 seconds to complete.
+loading data
+finished loading data
+vertex_count: 4000, driver count: 10, rider count: 10, 0.7444288730621338 seconds to complete.
+loading data
+finished loading data
+vertex_count: 5000, driver count: 10, rider count: 10, 0.9750380516052246 seconds to complete.
+loading data
+finished loading data
+vertex_count: 6000, driver count: 10, rider count: 10, 1.8696141242980957 seconds to complete.
+loading data
+finished loading data
+vertex_count: 7000, driver count: 10, rider count: 10, 1.913996934890747 seconds to complete.
+loading data
+finished loading data
+vertex_count: 8000, driver count: 10, rider count: 10, 2.357990026473999 seconds to complete.
+loading data
+finished loading data
+vertex_count: 9000, driver count: 10, rider count: 10, 2.7119140625 seconds to complete.
+loading data
+finished loading data
+vertex_count: 10000, driver count: 10, rider count: 10, 3.019207239151001 seconds to complete.
+loading data
+finished loading data
+vertex_count: 11000, driver count: 10, rider count: 10, 3.5246829986572266 seconds to complete.
+loading data
+finished loading data
+vertex_count: 12000, driver count: 10, rider count: 10, 3.2781801223754883 seconds to complete.
+loading data
+finished loading data
+vertex_count: 13000, driver count: 10, rider count: 10, 3.378107786178589 seconds to complete.
+loading data
+finished loading data
+vertex_count: 14000, driver count: 10, rider count: 10, 3.7149319648742676 seconds to complete.
+loading data
+finished loading data
+vertex_count: 15000, driver count: 10, rider count: 10, 3.436797857284546 seconds to complete.
+loading data
+finished loading data
+vertex_count: 16000, driver count: 10, rider count: 10, 3.6532139778137207 seconds to complete.
+loading data
+finished loading data
+vertex_count: 17000, driver count: 10, rider count: 10, 3.9124791622161865 seconds to complete.
+loading data
+finished loading data
+vertex_count: 18000, driver count: 10, rider count: 10, 4.436866760253906 seconds to complete.
+loading data
+finished loading data
+vertex_count: 19000, driver count: 10, rider count: 10, 4.773360252380371 seconds to complete.
+loading data
+finished loading data
+vertex_count: 20000, driver count: 10, rider count: 10, 4.984916925430298 seconds to complete.
+loading data
+finished loading data
+vertex_count: 21000, driver count: 10, rider count: 10, 5.153297185897827 seconds to complete.
+loading data
+finished loading data
+vertex_count: 22000, driver count: 10, rider count: 10, 5.535710096359253 seconds to complete.
+loading data
+finished loading data
+vertex_count: 23000, driver count: 10, rider count: 10, 5.861114978790283 seconds to complete.
+loading data
+finished loading data
+vertex_count: 24000, driver count: 10, rider count: 10, 6.187814950942993 seconds to complete.
+loading data
+finished loading data
+vertex_count: 25000, driver count: 10, rider count: 10, 6.154799222946167 seconds to complete.
+loading data
+finished loading data
+vertex_count: 26000, driver count: 10, rider count: 10, 6.724333047866821 seconds to complete.
+loading data
+finished loading data
+vertex_count: 27000, driver count: 10, rider count: 10, 7.225862979888916 seconds to complete.
+loading data
+finished loading data
+vertex_count: 28000, driver count: 10, rider count: 10, 6.795850038528442 seconds to complete.
+loading data
+finished loading data
+vertex_count: 29000, driver count: 10, rider count: 10, 7.313032865524292 seconds to complete.

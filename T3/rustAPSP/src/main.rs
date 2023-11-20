@@ -56,9 +56,14 @@ fn apsp_runner(_count: usize, nodefile_path: String, edgefile_path: String, outp
     println!("data loaded");
 
     let mut node_id_to_index = HashMap::new();
+    let mut node_index_to_id = HashMap::new();
+
     for (index, (node_id, _, _)) in nodes.iter().enumerate() {
-        node_id_to_index.insert(node_id.parse::<usize>().unwrap(), index);
+        let node_id_parsed = node_id.parse::<usize>().unwrap(); // Ensure correct parsing to usize
+        node_id_to_index.insert(node_id_parsed, index);
+        node_index_to_id.insert(index, node_id_parsed); // Directly insert parsed ID
     }
+
 
     // Floyd-Warshall Algorithm
     let vertex_count = nodes.len();
@@ -109,16 +114,19 @@ fn apsp_runner(_count: usize, nodefile_path: String, edgefile_path: String, outp
     let file = File::create(outputfile_path)?;
     let mut wtr = WriterBuilder::new().from_writer(file);
 
-    let headers: Vec<String> = (0..vertex_count).map(|i| i.to_string()).collect();
-    
-    // Here, we create a new iterator chain and pass it directly without a reference
+    // write header row
+    let headers: Vec<String> = (0..vertex_count)
+        .map(|i| node_index_to_id.get(&i).unwrap().to_string())
+        .collect();
     wtr.write_record(["Node"].into_iter().chain(headers.iter().map(String::as_str)))?;
 
+    // write each row...
     for i in 0..vertex_count {
+        let node_id = node_index_to_id.get(&i).unwrap().to_string();
         let row: Vec<String> = cost_matrix[i].iter().map(|x| x.to_string()).collect();
 
-        // Similarly, create a new iterator chain here
-        wtr.write_record(std::iter::once(i.to_string().as_str()).chain(row.iter().map(String::as_str)))?;
+        // Write the row to CSV: Node ID followed by the cost values
+        wtr.write_record(std::iter::once(&node_id).chain(row.iter()))?;
     }
 
     wtr.flush()?;
@@ -134,7 +142,7 @@ fn main() -> io::Result<()> {
 
         let nodefile_path = format!("../../data/modified_node_data_{}.json", count);
         let edgefile_path = format!("../../data/modified_edges_{}.csv", count);
-        let outputfile_path = format!("./data/shortest_path_costs_{}.csv.csv", count);
+        let outputfile_path = format!("./data/shortest_path_costs_{}.csv", count);
 
         apsp_runner(count, nodefile_path, edgefile_path, outputfile_path).unwrap();
 
