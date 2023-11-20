@@ -1,5 +1,5 @@
 # T1.py
-from lib import *
+from T3.lib import *
 import math
 import heapq
 from datetime import datetime, timedelta
