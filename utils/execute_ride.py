@@ -21,24 +21,17 @@ driver_working_probabilities = {
 }
 
 
+# executeRide returns a list of length 2
+# first item: list of length-3-dictionaries of metrics
+# second item: the driver class object that will be pushed back into the drivers pq, if the driver continues to work
+def executeRide(listReturnedFrom_matchAPassengerAndDriver, graphToUse, metricsRecorded):
 
-def executeRide(listReturnedFrom_matchAPassengerAndDriver):
+    metricsRecordedList = metricsRecorded
+
     thePassenger = listReturnedFrom_matchAPassengerAndDriver[0] # is a Passenger Class
     theDriver = listReturnedFrom_matchAPassengerAndDriver[1] # is a Driver Class
     # thePassenger's properties: timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID
     # theDriver's properties: timestamp, lat, lon, driverLocationVertexID
-
-    '''
-    # Extract day of the week and hour from the timestamp
-    day_of_week = theDriver.timestamp.weekday()  # Monday is 0 and Sunday is 6
-    hour = theDriver.timestamp.hour # getting .hour shouldn't need parentheses while getting weekday does need 'em
-    if day_of_week < 5:  # Weekdays (Monday to Friday)
-        timeCategory = f"weekday_{hour}"
-    else:  # Weekends (Saturday and Sunday)
-        timeCategory = f"weekend_{hour}"
-
-    graphToUse = graphs[timeCategory]
-    '''
 
 
 
@@ -50,27 +43,8 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
     passengerWillBePickedUpHereNodeID = thePassenger.pickUpLocationVertexID
     passengerWillBeDroppedOffHereNodeID = thePassenger.dropOffLocationVertexID
 
-    '''
-    # calculate and store how long it will take for theDriver to get to thePassenger, in units of hours
-    timeItTookForDriverToGetToPassenger = nx.shortest_path_length(
-        graphToUse, 
-        source=driverStartingNodeID, 
-        target=passengerWillBePickedUpHereNodeID, 
-        weight='weight'
-    )
+    
 
-
-
-    # calculate and store how long it will take for theDriver to get from pickup vertex to drop-off vertex, while passenger's in the car, in units of hours
-    timeItTookFromPickupToDropoff = nx.shortest_path_length(
-        graphToUse, 
-        source=passengerWillBePickedUpHereNodeID, 
-        target=passengerWillBeDroppedOffHereNodeID, 
-        weight='weight'
-        
-    )
-    '''
-    from T1 import graphToUse, metricsRecorded, driversHeap_PQ
     # Calculate the travel times
     timeItTookForDriverToGetToPassenger = dijkstra_shortest_path(
         graphToUse, 
@@ -102,12 +76,39 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
 
 
     # add the length-3 dictionary to metricsRecorded
-    metricsRecorded.append({"timeItTookForDriverToGetToPassenger": timeItTookForDriverToGetToPassenger, "timeItTookFromPickupToDropoff": timeItTookFromPickupToDropoff, "timeItTookForPassengerToGoFromUnmatchedToDroppedOff": timeItTookForPassengerToGoFromUnmatchedToDroppedOff})
+    metricsRecordedList.append({"timeItTookForDriverToGetToPassenger": timeItTookForDriverToGetToPassenger, "timeItTookFromPickupToDropoff": timeItTookFromPickupToDropoff, "timeItTookForPassengerToGoFromUnmatchedToDroppedOff": timeItTookForPassengerToGoFromUnmatchedToDroppedOff})
+    
+
+
+
+    
+
+    # Calculate if the driver will work based on time category
+    if should_driver_work(theDriver, timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff):
+        new_timestamp = theDriver.timestamp + timedelta(hours=timeItTookForDriverToGetToPassenger) + timedelta(hours=timeItTookFromPickupToDropoff)
+
+        # Push the driver back to the queue with the new timestamp and the drop-off location of the last passenger
+        print("Driver continued working!!!!YAY!!!!")
+        driverToAddBackToDriversHeapPQ = Driver(new_timestamp, thePassenger.destLat, thePassenger.destLon, passengerWillBeDroppedOffHereNodeID)
+        
+    else:
+        driverToAddBackToDriversHeapPQ = None
+        print("Driver quit working BROOOO")
+
+
+
+    return [metricsRecordedList, driverToAddBackToDriversHeapPQ]
+
+
+    # # last step of executeRide: at this point, theDriver has taken thePassenger to the drop-off vertex -> create a new Driver() with updated timestamp,  same lon (shouldn't matter), same lat (shouldn't matter), and updated driverLocationVertexID -> insert that Driver() to driversHeap_PQ
+    # heapq.heappush(driversHeap_PQ, Driver(theDriver.timestamp+timedelta(hours=timeItTookForDriverToGetToPassenger)+timedelta(hours=timeItTookFromPickupToDropoff), thePassenger.destLat, thePassenger.destLon, passengerWillBeDroppedOffHereNodeID))
 
 
 
 
-    def should_driver_work(driver, timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff):
+
+
+def should_driver_work(driver, timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff):
         drop_off_time = driver.timestamp + timedelta(hours=timeItTookForDriverToGetToPassenger) + timedelta(hours=timeItTookFromPickupToDropoff)
         day_of_week = drop_off_time.weekday()
         hour = drop_off_time.hour
@@ -135,17 +136,3 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver):
             return True
         else:
             return False
-
-    # Calculate if the driver will work based on time category
-    if should_driver_work(theDriver, timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff):
-        new_timestamp = theDriver.timestamp + timedelta(hours=timeItTookForDriverToGetToPassenger) + timedelta(hours=timeItTookFromPickupToDropoff)
-
-        # Push the driver back to the queue with the new timestamp and the drop-off location of the last passenger
-        print("Driver continued working!!!!YAY!!!!")
-        heapq.heappush(driversHeap_PQ, Driver(new_timestamp, thePassenger.destLat, thePassenger.destLon, passengerWillBeDroppedOffHereNodeID))
-    else:
-        print("Driver quit working BROOOO")
-
-
-    # # last step of executeRide: at this point, theDriver has taken thePassenger to the drop-off vertex -> create a new Driver() with updated timestamp,  same lon (shouldn't matter), same lat (shouldn't matter), and updated driverLocationVertexID -> insert that Driver() to driversHeap_PQ
-    # heapq.heappush(driversHeap_PQ, Driver(theDriver.timestamp+timedelta(hours=timeItTookForDriverToGetToPassenger)+timedelta(hours=timeItTookFromPickupToDropoff), thePassenger.destLat, thePassenger.destLon, passengerWillBeDroppedOffHereNodeID))

@@ -6,6 +6,8 @@ import json
 
 from utils.findNearestVertex import *
 
+
+
 class Passenger:
     def __init__(self, timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID):
         self.timestamp = timestamp
