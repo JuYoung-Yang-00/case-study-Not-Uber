@@ -1,7 +1,7 @@
 import csv
 
 
-def summarizeResult(outputOfTheT1Algo):
+def summarizeResult(outputOfTheT1Algo, task):
     # outputOfTheT1Algo = list -> each item in the list is a dictonary that looks something like:
     # {'timeItTookForDriverToGetToPassenger': 0.06343763989668617, 'timeItTookFromPickupToDropoff': 0.1664803757009768, 'timeItTookForPassengerToGoFromUnmatchedToDroppedOff': 0.2321906828198852}
 
@@ -20,7 +20,7 @@ def summarizeResult(outputOfTheT1Algo):
         D1list.append(item['timeItTookForPassengerToGoFromUnmatchedToDroppedOff'] * 60) # converting to minutes
         D2list.append((item['timeItTookFromPickupToDropoff'] - item['timeItTookForDriverToGetToPassenger']) * 60) # converting to minutes
 
-    with open('T1_summary.csv', 'w', newline='') as file:
+    with open('{}_summary.csv'.format(task), 'w', newline='') as file:
         writer = csv.writer(file)
 
         # Write headers
