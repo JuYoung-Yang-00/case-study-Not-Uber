@@ -55,7 +55,7 @@ def T1(passengersHeap_PQ, driversHeap_PQ):
     n = 0
     while (passengersHeap_PQ): #is not empty
         pasengerAndDriver = matchAPassengerAndDriver(passengersHeap_PQ, driversHeap_PQ)
-        executeRide(pasengerAndDriver)
+        executeRide(pasengerAndDriver, graphToUse, metricsRecorded, driversHeap_PQ)
         n = n+1
         print(f"{n} rides executed")
     
@@ -68,4 +68,4 @@ def T1(passengersHeap_PQ, driversHeap_PQ):
 
 
 simulation = T1(passengersHeap_PQ, driversHeap_PQ)
-summarizeResult(simulation)
+summarizeResult(simulation, 'T1')
