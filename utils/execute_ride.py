@@ -89,7 +89,31 @@ def executeRide(listReturnedFrom_matchAPassengerAndDriver, graphToUse, metricsRe
 
 
 
+def T3_executeRide(pair, metricsRecorded):
+    metricsRecordedList = metricsRecorded
+    passenger = pair[0]
+    driver = pair[1]
+    pickup_duration = pair[2]
+    dropoff_duration = pair[3]
+    # passenger became available later than driver became available
+    if passenger.timestamp - driver.timestamp > timedelta(0):
+        timeItTookForPassengerToGoFromUnmatchedToDroppedOff = pickup_duration + dropoff_duration
+    # passenger became available before the driveer became avilable
+    else:
+        timeItTookForPassengerToGoFromUnmatchedToDroppedOff = ((driver.timestamp - passenger.timestamp).total_seconds() / 3600 ) + pickup_duration + dropoff_duration
+    # add the length-3 dictionary to metricsRecorded
+    metricsRecordedList.append({"timeItTookForDriverToGetToPassenger": pickup_duration, "timeItTookFromPickupToDropoff": dropoff_duration, "timeItTookForPassengerToGoFromUnmatchedToDroppedOff": timeItTookForPassengerToGoFromUnmatchedToDroppedOff})
+        # Calculate if the driver will work based on time category
+    if should_driver_work(driver, pickup_duration, dropoff_duration):
+        new_timestamp = driver.timestamp + timedelta(hours=pickup_duration) + timedelta(hours=dropoff_duration)
+        # Push the driver back to the queue with the new timestamp and the drop-off location of the last passenger
+        print("Driver continued working!!!!YAY!!!!")
+        driverToAddBackToDriversHeapPQ = Driver(new_timestamp, passenger.destLat, passenger.destLon, passenger.dropOffLocationVertexID)
+    else:
+        driverToAddBackToDriversHeapPQ = None
+        print("Driver quit working BROOOO")
 
+    return [metricsRecordedList, driverToAddBackToDriversHeapPQ]
 
 
 def should_driver_work(driver, timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff):
