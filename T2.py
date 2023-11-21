@@ -18,19 +18,38 @@ graphToUse = createGraph()
 metricsRecorded = [] # each item in metricsRecorded should contain a list that is: [timeItTookForDriverToGetToPassenger, timeItTookFromPickupToDropoff, timeItTookForPassengerToGoFromUnmatchedToDroppedOff]
 
 def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatched):
-    ## pop passengers based on number of passengers unmatched at current timestamp
+    """
+    returns a list of passengers and drivers that are matched at the "current time"
+    this function is triggered for every new passenger request
+    
+    A Note on 'current_unmatched':
+    - Suppose there's a passenger who can't find a match (there's more passengers than there are drivers available)
+    - These passengers will be added back to the passenger heap, but this means next time the heap is popped we will retrieve the same passenger... and find no match
+    - current_unmatched allows us to effectiely query the next passenger who requests a ride by adding 1 to the total number of unmatched passengers from the previous function call.
+    - for current_unmatched > 1 we thus consider the newest passenger request as well as all passenger requests previously left unmatched. 
+   
+    Paramaters
+    ---------
+    passenger_heap_pq: list/heap
+        a heapified list of passengers 
+    driver_heap_pq: list/heap
+        a heapified list of drivers 
+    current_unmatched: int
+        number of unmatched passengers to consider at this timestamp
+    """
+
+    ## pop passengers based on number of passengers unmatched at current timestamp, add to list
     avail_passengers = []
     for i in range(current_unmatched):
         avail_passenger = heapq.heappop(passenger_heap_pq)
         avail_passengers.append(avail_passenger)
-    # avail_passengers = heapq.nsmallest(current_unmatched, passenger_heap_pq)
-    ## passenger with latest timestamp == "current time"
+    ## passenger with latest timestamp => newest request => "current time"
     current_timestamp = avail_passengers[-1].timestamp
-    ## find available drivers based on unmatched passengers  
+    ## find available drivers based on the current time  
     avail_drivers = find_availability(driver_heap_pq, current_timestamp)
-    ## find the passenger <> driver pairs with smallest Euclidean distance between their source location
+    ## find Euclidean distance between each passenger <> driver pair
     distances = find_distances(avail_drivers, avail_passengers)
-    ## while there are available drivers or passengers to match
+    ## find passenger <> driver pairs with smallest Euclidean distance between them
     passengerAndDrivers = find_matches(avail_drivers, avail_passengers, distances)
     ## any unmatched drivers? add them back to original heap
     for unmatched_driver in avail_drivers:
@@ -46,25 +65,27 @@ def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatche
 ## THE T2 ALGO
 def T2(passengersHeap_PQ, driversHeap_PQ):
     # passengersHeap_PQ, driversHeap_PQ, graphs, and metricsRecorded is already initialized
-    n = 0
-    starting_number = len(passengersHeap_PQ)
-    current_unmatched = 1
+    n = 0 ## # matches
+    current_unmatched = 1 ## initialize current_unmatched
     while (passengersHeap_PQ): #is not empty
         print("STARTING THIS MATCHING ROUND")
         print("Passengers Left: ", len(passengersHeap_PQ))
         print("Drivers Left: ", len(driversHeap_PQ))
         print("Number of Passengers Available for Match: ", current_unmatched)
+        ## match passenger and driver, retrieve list
         passengerAndDrivers, current_unmatched = matchPassengerAndDrivers(passengersHeap_PQ, driversHeap_PQ, current_unmatched)
         print("Number of Passenger/Drivers Actually Matched: ", len(passengerAndDrivers))
+        ## for each pair, execute ride
         for pair in passengerAndDrivers:
             executeRide(pair, graphToUse, metricsRecorded, driversHeap_PQ)
             n = n+1
         print(f"{n} rides executed thus far")
     
-    # now that passengersHeap_PQ is empty,
+    # now that passengersHeap_PQ is empty, 
     print(metricsRecorded)
-    return metricsRecorded, n, starting_number
+    return metricsRecorded
 
+## Helper function to find available drivers
 def find_availability(drivers, timestamp):
     avail_drivers = []
     while True:
@@ -80,6 +101,7 @@ def find_availability(drivers, timestamp):
             break 
     return avail_drivers
 
+## Helper function to compute distances between passenger <> driver pair
 def find_distances(drivers, passengers):
     distances = []
     heapq.heapify(distances)
@@ -97,6 +119,7 @@ def find_distances(drivers, passengers):
             heapq.heappush(distances, (distance,(passenger, driver)))
     return distances
 
+## Helper function to find passenger <> driver pairs with minimum straight-line distance
 def find_matches(avail_drivers, avail_passengers, distances):
     passengerAndDrivers = []
     while avail_drivers and avail_passengers:
