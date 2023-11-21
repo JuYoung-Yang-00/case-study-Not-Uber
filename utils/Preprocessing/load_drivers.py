@@ -4,6 +4,8 @@ import heapq
 
 from utils.findNearestVertex import *
 
+
+
 class Driver:
     def __init__(self, timestamp, lat, lon, driverLocationVertexID):
         self.timestamp = timestamp

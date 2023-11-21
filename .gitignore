@@ -20,12 +20,6 @@ __pycache__/
 .idea/
 *.sublime-*
 casestudy.pdf
-data/adjacency_readme.txt
-data/adjacency-1.json
-data/drivers_and_passengers_readme.txt
-data/drivers.csv
-data/edges_README.txt
-data/edges.csv
-data/node_data_readme.txt
-data/node_data.json
-data/passengers.csv
+data/*
+T3/rustAPSP/data/*
+T3/rustAPSP/target/*
