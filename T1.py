@@ -49,7 +49,6 @@ def T1(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
         executeRideResult = executeRide(passengerAndDriver, graphToUse, metricsRecordedUpdated)
         metricsRecordedUpdated = executeRideResult[0]
         driverToBeAddedBackToPQ = executeRideResult[1]
-
         n = n+1
         print(f"{n} rides executed")
         if driverToBeAddedBackToPQ is not None:
@@ -60,8 +59,6 @@ def T1(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
     # now that passengersHeap_PQ is empty,
     print(metricsRecordedUpdated)
     return metricsRecordedUpdated
-
-
 
 
 simulation = T1(passengersHeap_PQ, driversHeap_PQ, metricsRecorded)
