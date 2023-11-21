@@ -4,11 +4,15 @@ import math
 
 import heapq
 
-def dijkstra(start, goal, adj_graph):
+def dijkstra(start, goal, adj_graph, time_index):
 
     # dictionary to store the shortest path to each vertex
     shortest_paths = {vertex: float('infinity') for vertex in adj_graph}
     shortest_paths[start] = 0
+
+    # cost is different based on time of day
+    is_weekday = True if time_index // 24 == 0 else False
+    time_of_day = time_index % 24
 
     # has (cost, node_id)
     priority_queue = [(0, start)]
@@ -25,8 +29,9 @@ def dijkstra(start, goal, adj_graph):
         # for each neighbor node...
         for neighbor in adj_graph[current]:
 
-            # add the cost
-            add_cost = adj_graph[current][neighbor]['weekdays_cost'][0]  # Adjusted to use separate lists
+            # add the cost, based on time of day
+            if is_weekday: add_cost = adj_graph[current][neighbor]['weekdays_cost'][time_of_day]
+            else: add_cost = adj_graph[current][neighbor]['weekends_cost'][time_of_day]
             neighbor_cost = cost + add_cost
 
             # if the neighbor has a shorter path to the goal, update the path
@@ -36,9 +41,12 @@ def dijkstra(start, goal, adj_graph):
     
     return shortest_paths[goal]
 
-def a_star(start, goal, adj_graph, nodes) -> float:
+def a_star(start, goal, adj_graph, nodes, time_index) -> float:
     start = int(start)
     goal = int(goal)
+
+    is_weekday = True if time_index // 24 == 0 else False
+    time_of_day = time_index % 24
 
     # Heuristic function (Euclidean distance)
     def heuristic(node1, node2):
@@ -85,10 +93,10 @@ def a_star(start, goal, adj_graph, nodes) -> float:
         # investigate the adjacent nodes
         for neighbor in adj_graph[current]:
             
-            # calculate the tentative actual score
-            tentative_g_score = g_score[current] + adj_graph[current][neighbor]['weekdays_cost'][0]
+            # calculate the tentative actual score, considering time of day and weekend/weekday
+            if is_weekday: tentative_g_score = g_score[current] + adj_graph[current][neighbor]['weekdays_cost'][time_of_day]
+            else: tentative_g_score = g_score[current] + adj_graph[current][neighbor]['weekends_cost'][time_of_day]
 
-            # if 
             if tentative_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g_score
