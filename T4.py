@@ -1,6 +1,6 @@
-from dataloader import load_data
-from NearestNodeFinder import NearestNodeFinder
-from ShortestPath import a_star
+from utils.Preprocessing.AllDataLoader import load_data
+from utils.NearestNodeFinder import NearestNodeFinder
+from utils.SearchAlgo.PkShortestPathAlgos import a_star
 import time
 
 '''

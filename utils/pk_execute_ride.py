@@ -21,28 +21,12 @@ driver_working_probabilities = {
 # executeRide returns a list of length 2
 # first item: list of length-3-dictionaries of metrics
 # second item: the driver class object that will be pushed back into the drivers pq, if the driver continues to work
-def executeRide(listReturnedFrom_matchAPassengerAndDriver, graphToUse, metricsRecorded):
+def executeRide(driver, rider, adj_graph):
 
-    metricsRecordedList = metricsRecorded
-    thePassenger = listReturnedFrom_matchAPassengerAndDriver[0] # is a Passenger Class
-    theDriver = listReturnedFrom_matchAPassengerAndDriver[1] # is a Driver Class
-    # thePassenger's properties: timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID
-    # theDriver's properties: timestamp, lat, lon, driverLocationVertexID
-
-
-    latest = max(theDriver.timestamp, thePassenger.timestamp)
-    day_of_week = latest.weekday()
-    hour = latest.hour
-
-
-    day_of_week = theDriver.timestamp.weekday()
-    hour = theDriver.timestamp.hour
-    
     driverStartingNodeID = theDriver.driverLocationVertexID
     passengerWillBePickedUpHereNodeID = thePassenger.pickUpLocationVertexID
     passengerWillBeDroppedOffHereNodeID = thePassenger.dropOffLocationVertexID
 
-    
     # Calculate the travel times
     timeItTookForDriverToGetToPassenger = dijkstra_shortest_path(
         graphToUse, 
