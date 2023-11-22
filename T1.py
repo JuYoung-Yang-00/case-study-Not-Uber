@@ -12,8 +12,8 @@ from utils.SearchAlgo.djikstra import *
 
 # 1. load data and initialize passenger priority queue and driver priority queue using loading_drivers_and_passengers.py)
 start_time = time.time()
-passengersHeap_PQ = read_passengers_csv('./data/passengers.csv')
-driversHeap_PQ = read_drivers_csv('./data/drivers.csv')
+passengersHeap_PQ = read_passengers_csv('./data/passengers.csv', -1)
+driversHeap_PQ = read_drivers_csv('./data/drivers.csv', -1)
 data_finished_loading = time.time()
 
 loading_time = data_finished_loading - start_time
@@ -71,6 +71,3 @@ end_time = time.time()
 total_time = end_time - start_time 
 matching_time = end_time - data_finished_loading
 summarizeResult(simulation, 'T1')
-print('Time for Data to Load: ', loading_time)
-print('Time for Matching Algorithm: ', matching_time)
-print('ALGORITHM ENDED, TIME ELAPSED: ', total_time)

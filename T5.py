@@ -21,7 +21,7 @@ metricsRecorded = []
 pf = Precompute_Pathfinder(f"rustAPSP/data/shortest_path_costs_{vertex_count}.csv")
 
 matching_start_time = time.time() 
-def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatched):
+def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatched, driver_priority):
     """
     returns a list of passengers and drivers that are matched at the "current time"
     this function is triggered for every new passenger request
@@ -55,7 +55,7 @@ def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatche
     if len(avail_drivers) == 0 and len(passenger_heap_pq) < current_unmatched: 
         avail_drivers = heapq.nsmallest(len(passenger_heap_pq), driver_heap_pq)
     ## find estimated time between each passenger <> driver pair
-    times = find_heuristic(avail_drivers, avail_passengers)
+    times = find_heuristic(avail_drivers, avail_passengers, driver_priority)
     ## find as many passenger <> driver pairs with smallest pickup time between them
     passengerAndDrivers = find_matches(avail_drivers, avail_passengers, times)
     ## any unmatched drivers? add them back to original heap
@@ -69,7 +69,7 @@ def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatche
     return passengerAndDrivers, current_unmatched
     
 ## THE T5 ALGO
-def T5(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
+def T5(passengersHeap_PQ, driversHeap_PQ, metricsRecorded, driver_priority):
     # passengersHeap_PQ, driversHeap_PQ, graphs, and metricsRecorded is already initialized
     n = 0 ## # matches
     current_unmatched = 1 ## initialize current_unmatched
@@ -79,7 +79,7 @@ def T5(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
         print("Drivers Left: ", len(driversHeap_PQ))
         print("Number of Passengers Available for Match: ", current_unmatched)
         ## match passenger and driver, retrieve list
-        passengerAndDrivers, current_unmatched = matchPassengerAndDrivers(passengersHeap_PQ, driversHeap_PQ, current_unmatched)
+        passengerAndDrivers, current_unmatched = matchPassengerAndDrivers(passengersHeap_PQ, driversHeap_PQ, current_unmatched, driver_priority)
         print("Number of Passenger/Drivers Actually Matched: ", len(passengerAndDrivers))
         ## for each pair, execute ride
         for pair in passengerAndDrivers:
@@ -113,9 +113,10 @@ def find_availability(drivers, timestamp):
             break 
     return avail_drivers
 
-def find_heuristic(drivers, passengers):
+def find_heuristic(drivers, passengers, driver_priority):
     heuristic = []
     heapq.heapify(heuristic)
+    passenger_priority = 1 - driver_priority
     ## for each passenger
     for passenger in passengers:
         ## get their coordinate
@@ -123,7 +124,8 @@ def find_heuristic(drivers, passengers):
         dropoff_node = passenger.dropOffLocationVertexID
         ## for each driver
         for driver in drivers:
-            waiting_time = max(0,driver.timestamp - passenger.timestamp)
+            waiting_time = max(timedelta(0,0),driver.timestamp - passenger.timestamp)
+            waiting_time = float(waiting_time.total_seconds())
             ## get their coordinate
             driver_node = driver.driverLocationVertexID
             # lookup time from precomputed paths/costs
@@ -131,7 +133,7 @@ def find_heuristic(drivers, passengers):
             dropoff_duration = pf.lookup_shortest_path(pickup_node, dropoff_node)
             driver_profit = dropoff_duration - pickup_duration
             ## add to min heap
-            weighted_sum = 0.5 * waiting_time + 0.5 * driver_profit
+            weighted_sum = passenger_priority * waiting_time + driver_priority * driver_profit
             heapq.heappush(heuristic, (-1 * weighted_sum,(passenger, driver, pickup_duration, dropoff_duration)))
     return heuristic
 
@@ -152,7 +154,8 @@ def find_matches(avail_drivers, avail_passengers, times):
             passengerAndDrivers.append([passenger, driver,pickup_duration,dropoff_duration])
     return passengerAndDrivers
 
-simulation = T5(passengersHeap_PQ, driversHeap_PQ, metricsRecorded)
+driver_priority = 0.5
+simulation = T5(passengersHeap_PQ, driversHeap_PQ, metricsRecorded, 0.5)
 end_time = time.time()
 total_time = end_time - algo_start_time
 matching_time = end_time - matching_start_time

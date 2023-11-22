@@ -104,7 +104,7 @@ def load_data(drivers_filepath: str, riders_filepath: str, nodes_filepath: str, 
             if nearest_node_finder == 'naive':
                 driverLocationVertexID = findNearestVertex(float(row[1]), float(row[2]), nodes_json)
             elif nearest_node_finder == 'KDTree':
-                driverLocationVertexID = nnf.find_nearest_node(lat, lon, nodes)
+                driverLocationVertexID = nnf.find_nearest_node(lon, lat, nodes)
             print(Driver(timestamp, lat, lon, driverLocationVertexID))
             # drivers.append(Driver(timestamp, lat, lon, driverLocationVertexID))
             heapq.heappush(drivers, Driver(timestamp, lat, lon, driverLocationVertexID))  # Add drivers to the heap
@@ -129,9 +129,8 @@ def load_data(drivers_filepath: str, riders_filepath: str, nodes_filepath: str, 
                 pickUpLocationVertexID = findNearestVertex(float(row[1]), float(row[2]), nodes_json)
                 dropOffLocationVertexID = findNearestVertex(float(row[3]), float(row[4]), nodes_json)
             elif nearest_node_finder == 'KDTree':
-                nnf = NearestNodeFinder(nodes)
-                pickUpLocationVertexID = nnf.find_nearest_node(sourceLat, sourceLon, nodes)
-                dropOffLocationVertexID = nnf.find_nearest_node(destLat, destLon, nodes)
+                pickUpLocationVertexID = nnf.find_nearest_node(sourceLon, sourceLat, nodes)
+                dropOffLocationVertexID = nnf.find_nearest_node(destLon, destLat, nodes)
             print(Passenger(timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID))
             heapq.heappush(passengers, Passenger(timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID))  # Add passengers to the heap
             i+=1
