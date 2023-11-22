@@ -10,7 +10,7 @@ from utils.summarizeResult import *
 import random
 
 
-vertex_count = 2000
+vertex_count = 9000
 # 1. get nodes, edges, adjaceny graph, driver & passenger heap using KDTree as the nearest vertex finder 
 algo_start_time = time.time()
 nodes, edges, adjacency_graph, driversHeap_PQ, passengersHeap_PQ, data_loading_time = load_data('data/drivers.csv', 'data/passengers.csv', f"data/modified_node_data_{vertex_count}.json", f'data/modified_edges_{vertex_count}.csv', -1, -1, 'KDTree')
@@ -20,7 +20,6 @@ metricsRecorded = []
 
 # 3. load precomputed pathfinder, where we lookup the shortest path cost using APSP
 pf = Precompute_Pathfinder(f"rustAPSP/data/shortest_path_costs_{vertex_count}.csv")
-
 matching_start_time = time.time() 
 def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatched):
     """
