@@ -1,5 +1,4 @@
 from utils.Preprocessing.AllDataLoader import load_data
-from utils.SearchAlgo.ShortestPathAlgos import a_star
 import time
 from utils.SearchAlgo.APSPPathfinder import Precompute_Pathfinder
 from datetime import timedelta, datetime
@@ -20,8 +19,9 @@ metricsRecorded = []
 
 # 3. load precomputed pathfinder, where we lookup the shortest path cost using APSP
 pf = Precompute_Pathfinder(f"rustAPSP/data/shortest_path_costs_{vertex_count}.csv")
+
 matching_start_time = time.time() 
-def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatched):
+def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatched, driver_priority, busyDriversList):
     """
     returns a list of passengers and drivers that are matched at the "current time"
     this function is triggered for every new passenger request
@@ -50,28 +50,39 @@ def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatche
     ## passenger with latest timestamp => newest request => "current time"
     current_timestamp = max([passenger.timestamp for passenger in avail_passengers])
     print("Time Right Now: ", current_timestamp)
+    updatedBusyDriversList = []
+    for busy_driver in busyDriversList:
+        if busy_driver.timestamp < current_timestamp - timedelta(0, 30): #i.e. time finished their ride vs 7am
+            updatedBusyDriversList.append(busy_driver)
+
+
     ## find available drivers based on the current time  
-    avail_drivers = find_availability(driver_heap_pq, current_timestamp)
-    if len(avail_drivers) == 0 and len(passenger_heap_pq) < current_unmatched: 
-        avail_drivers = heapq.nsmallest(len(passenger_heap_pq), driver_heap_pq)
+    idle_drivers = find_availability(driver_heap_pq, current_timestamp)
+    if len(idle_drivers) == 0 and len(passenger_heap_pq) < current_unmatched: 
+        idle_drivers = heapq.nsmallest(len(passenger_heap_pq), driver_heap_pq)
+    avail_drivers = idle_drivers + updatedBusyDriversList
     ## find estimated time between each passenger <> driver pair
-    times = find_time(avail_drivers, avail_passengers)
+    times = find_heuristic(avail_drivers, avail_passengers, driver_priority)
     ## find as many passenger <> driver pairs with smallest pickup time between them
     passengerAndDrivers = find_matches(avail_drivers, avail_passengers, times)
     ## any unmatched drivers? add them back to original heap
     for unmatched_driver in avail_drivers:
-        heapq.heappush(driver_heap_pq, unmatched_driver)
+        # if unmatched_driver.timestamp <= current_timestamp:
+        if unmatched_driver not in updatedBusyDriversList:
+            heapq.heappush(driver_heap_pq, unmatched_driver)
     ## any unmatched passengers? add them back to original heap
     for unmatched_passsenger in avail_passengers:
         heapq.heappush(passenger_heap_pq, unmatched_passsenger)
     ## we want to also consider these unmatched passengers in the next timestamp, so we their count to current_unmatched 
     current_unmatched = 1+len(avail_passengers)
-    return passengerAndDrivers, current_unmatched
+    return passengerAndDrivers, current_unmatched, updatedBusyDriversList
     
-## THE T4 ALGO
-def T4(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
+## THE B1 ALGO
+def B1(passengersHeap_PQ, driversHeap_PQ, metricsRecorded, driver_priority):
     # passengersHeap_PQ, driversHeap_PQ, graphs, and metricsRecorded is already initialized
     n = 0 ## # matches
+    updatedBusyDriversList = []
+
     current_unmatched = 1 ## initialize current_unmatched
     while (passengersHeap_PQ): #is not empty
         print("STARTING THIS MATCHING ROUND")
@@ -79,7 +90,7 @@ def T4(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
         print("Drivers Left: ", len(driversHeap_PQ))
         print("Number of Passengers Available for Match: ", current_unmatched)
         ## match passenger and driver, retrieve list
-        passengerAndDrivers, current_unmatched = matchPassengerAndDrivers(passengersHeap_PQ, driversHeap_PQ, current_unmatched)
+        passengerAndDrivers, current_unmatched, updatedBusyDriversList = matchPassengerAndDrivers(passengersHeap_PQ, driversHeap_PQ, current_unmatched, driver_priority, updatedBusyDriversList)
         print("Number of Passenger/Drivers Actually Matched: ", len(passengerAndDrivers))
         ## for each pair, execute ride
         for pair in passengerAndDrivers:
@@ -91,6 +102,9 @@ def T4(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
                 ## have a separate list of busy drivers
                 heapq.heappush(driversHeap_PQ, continuing_drivers)
                 print("a driver got added back to driver heap pq")
+                updatedBusyDriversList.append(continuing_drivers)
+
+                    
         print(f"{n} rides executed thus far")
 
     # now that passengersHeap_PQ is empty, 
@@ -100,7 +114,7 @@ def T4(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
 ## Helper function to find available drivers
 def find_availability(drivers, timestamp):
     avail_drivers = []
-    while True:
+    while True and len(drivers) != 0:
         ## pop potential matching driver
         candidate_driver = heapq.heappop(drivers)
         ## driver has timestamp less than or equal to current timestamp 
@@ -113,9 +127,10 @@ def find_availability(drivers, timestamp):
             break 
     return avail_drivers
 
-def find_time(drivers, passengers):
-    times = []
-    heapq.heapify(times)
+def find_heuristic(drivers, passengers, driver_priority):
+    heuristic = []
+    heapq.heapify(heuristic)
+    passenger_priority = 1 - driver_priority
     ## for each passenger
     for passenger in passengers:
         ## get their coordinate
@@ -123,14 +138,18 @@ def find_time(drivers, passengers):
         dropoff_node = passenger.dropOffLocationVertexID
         ## for each driver
         for driver in drivers:
+            waiting_time = max(timedelta(0,0),driver.timestamp - passenger.timestamp)
+            waiting_time = float(waiting_time.total_seconds())
             ## get their coordinate
             driver_node = driver.driverLocationVertexID
             # lookup time from precomputed paths/costs
             pickup_duration = pf.lookup_shortest_path(driver_node, pickup_node)
             dropoff_duration = pf.lookup_shortest_path(pickup_node, dropoff_node)
+            driver_profit = dropoff_duration - pickup_duration
             ## add to min heap
-            heapq.heappush(times, (pickup_duration,(passenger, driver, dropoff_duration)))
-    return times
+            weighted_sum = passenger_priority * waiting_time + driver_priority * driver_profit
+            heapq.heappush(heuristic, (-1 * weighted_sum,(passenger, driver, pickup_duration, dropoff_duration)))
+    return heuristic
 
 
 def find_matches(avail_drivers, avail_passengers, times):
@@ -139,10 +158,7 @@ def find_matches(avail_drivers, avail_passengers, times):
         ## pop the minimum pickup duration pair
         min_times = heapq.heappop(times)
         ## information about pair
-        pickup_duration = min_times[0]
-        dropoff_duration = min_times[1][2]
-        passenger = min_times[1][0]
-        driver = min_times[1][1]
+        passenger, driver, pickup_duration, dropoff_duration = min_times[1][0], min_times[1][1], min_times[1][2], min_times[1][3]
         ## the driver passenger pair is valid (BOTH are still available)
         if passenger in avail_passengers and driver in avail_drivers:
             ## well now they're not available!
@@ -152,11 +168,12 @@ def find_matches(avail_drivers, avail_passengers, times):
             passengerAndDrivers.append([passenger, driver,pickup_duration,dropoff_duration])
     return passengerAndDrivers
 
-simulation = T4(passengersHeap_PQ, driversHeap_PQ, metricsRecorded)
+driver_priority = 0.5
+simulation = B1(passengersHeap_PQ, driversHeap_PQ, metricsRecorded, 0.5)
 end_time = time.time()
 total_time = end_time - algo_start_time
 matching_time = end_time - matching_start_time
-summarizeResult(simulation, 'T4')
+summarizeResult(simulation, 'B1')
 print('Time for Data to Load: ', data_loading_time)
 print('Time for Matching Algorithm: ', matching_time)
 print('ALGORITHM ENDED, TIME ELAPSED: ', total_time)
