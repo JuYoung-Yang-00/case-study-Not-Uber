@@ -23,23 +23,30 @@ class Driver:
 
 
 
-
+nodes = {}
 # Load your node data from JSON file
 with open('./data/node_data.json', 'r') as f:
     node_data = json.load(f)
+    for node_id, node_latlon in node_data.items():
+            nodes[int(node_id)] = (node_latlon['lon'], node_latlon['lat'])
 
-def read_drivers_csv(file_name):
+def read_drivers_csv(file_name, count):
     drivers = []
     heapq.heapify(drivers)  # Initialize an empty heap
     with open(file_name, 'r') as file:
         csv_reader = csv.reader(file)
         next(csv_reader, None)  # Skip the header
+        i = 0
         for row in csv_reader:
             timestamp = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
             lat = float(row[1])
             lon = float(row[2])
             driverLocationVertexID = findNearestVertex(float(row[1]), float(row[2]), node_data)
             print(Driver(timestamp, lat, lon, driverLocationVertexID))
+            # drivers.append(Driver(timestamp, lat, lon, driverLocationVertexID))
             heapq.heappush(drivers, Driver(timestamp, lat, lon, driverLocationVertexID))  # Add drivers to the heap
+            i += 1
+            if i == count:
+                break
     print(f"drivers heap pq is loaded and is of length {len(drivers)}")
     return drivers

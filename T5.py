@@ -1,8 +1,8 @@
 from utils.Preprocessing.AllDataLoader import load_data
-from utils.SearchAlgo.ShortestPathAlgos import a_star
-from utils.execute_ride import *
 import time
+from utils.SearchAlgo.APSPPathfinder import Precompute_Pathfinder
 from datetime import timedelta, datetime
+from utils.execute_ride import *
 from utils.Preprocessing.load_drivers import *
 from utils.Preprocessing.load_passengers import *
 from utils.summarizeResult import *
@@ -10,17 +10,17 @@ import random
 
 
 vertex_count = 2000
-# 1. get nodes, edges, adjaceny graph, driver & passenger heap using a naive nearest vertex finder 
+# 1. get nodes, edges, adjaceny graph, driver & passenger heap using KDTree as the nearest vertex finder 
 algo_start_time = time.time()
-nodes, edges, adjacency_graph, driversHeap_PQ, passengersHeap_PQ, data_loading_time = load_data('data/drivers.csv', 'data/passengers.csv', f"data/modified_node_data_{vertex_count}.json", f'data/modified_edges_{vertex_count}.csv', -1, -1, 'naive')
-matching_start_time = time.time() 
+nodes, edges, adjacency_graph, driversHeap_PQ, passengersHeap_PQ, data_loading_time = load_data('data/drivers.csv', 'data/passengers.csv', f"data/modified_node_data_{vertex_count}.json", f'data/modified_edges_{vertex_count}.csv', -1, -1, 'KDTree')
 
-
-# 2. get nodes, edges, adjaceny graph 
-# nodes, edges, adjacency_graph, driversHeap_PQ, passengersHeap_PQ = load_data('data/drivers.csv', 'data/passengers.csv', f"data/node_data.json", f'data/edges.csv', 100, 300, 'naive')
-# 3. initializing metricsRecorded, which we'll use to talk about efficiency in the .pdf report we'll submit on Gradescope or something
+# 2. initializing metricsRecorded, which we'll use to talk about efficiency in the .pdf report we'll submit on Gradescope or something
 metricsRecorded = []
 
+# 3. load precomputed pathfinder, where we lookup the shortest path cost using APSP
+pf = Precompute_Pathfinder(f"rustAPSP/data/shortest_path_costs_{vertex_count}.csv")
+
+matching_start_time = time.time() 
 def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatched):
     """
     returns a list of passengers and drivers that are matched at the "current time"
@@ -52,13 +52,10 @@ def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatche
     print("Time Right Now: ", current_timestamp)
     ## find available drivers based on the current time  
     avail_drivers = find_availability(driver_heap_pq, current_timestamp)
-    ## no drivers available at the moment, but all remaining passengers are unmatched <== we revert to matching them to the next N drivers
     if len(avail_drivers) == 0 and len(passenger_heap_pq) < current_unmatched: 
         avail_drivers = heapq.nsmallest(len(passenger_heap_pq), driver_heap_pq)
-        len(avail_passengers)
-        len(avail_drivers)
     ## find estimated time between each passenger <> driver pair
-    times = find_time(avail_drivers, avail_passengers, nodes, edges, adjacency_graph)
+    times = find_heuristic(avail_drivers, avail_passengers)
     ## find as many passenger <> driver pairs with smallest pickup time between them
     passengerAndDrivers = find_matches(avail_drivers, avail_passengers, times)
     ## any unmatched drivers? add them back to original heap
@@ -71,8 +68,8 @@ def matchPassengerAndDrivers(passenger_heap_pq, driver_heap_pq, current_unmatche
     current_unmatched = 1+len(avail_passengers)
     return passengerAndDrivers, current_unmatched
     
-## THE T3 ALGO
-def T3(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
+## THE T5 ALGO
+def T5(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
     # passengersHeap_PQ, driversHeap_PQ, graphs, and metricsRecorded is already initialized
     n = 0 ## # matches
     current_unmatched = 1 ## initialize current_unmatched
@@ -91,6 +88,7 @@ def T3(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
             continuing_drivers = rideResult[1]
             n = n+1
             if continuing_drivers is not None:
+                ## have a separate list of busy drivers
                 heapq.heappush(driversHeap_PQ, continuing_drivers)
                 print("a driver got added back to driver heap pq")
         print(f"{n} rides executed thus far")
@@ -102,7 +100,7 @@ def T3(passengersHeap_PQ, driversHeap_PQ, metricsRecorded):
 ## Helper function to find available drivers
 def find_availability(drivers, timestamp):
     avail_drivers = []
-    while True and len(drivers) != 0:
+    while True:
         ## pop potential matching driver
         candidate_driver = heapq.heappop(drivers)
         ## driver has timestamp less than or equal to current timestamp 
@@ -115,9 +113,9 @@ def find_availability(drivers, timestamp):
             break 
     return avail_drivers
 
-def find_time(drivers, passengers, nodes, edges, adjacency_graph):
-    times = []
-    heapq.heapify(times)
+def find_heuristic(drivers, passengers):
+    heuristic = []
+    heapq.heapify(heuristic)
     ## for each passenger
     for passenger in passengers:
         ## get their coordinate
@@ -125,16 +123,17 @@ def find_time(drivers, passengers, nodes, edges, adjacency_graph):
         dropoff_node = passenger.dropOffLocationVertexID
         ## for each driver
         for driver in drivers:
+            waiting_time = max(0,driver.timestamp - passenger.timestamp)
             ## get their coordinate
             driver_node = driver.driverLocationVertexID
-            # find the current time index - taking the later of the driver or rider.
-            time_index = time_to_integer(max(driver.timestamp, passenger.timestamp))
-            # Calculate travel times using dijkstra 
-            pickup_duration = a_star(driver_node, pickup_node, adjacency_graph, nodes, time_index)
-            dropoff_duration = a_star(pickup_node, dropoff_node, adjacency_graph, nodes, time_index)
+            # lookup time from precomputed paths/costs
+            pickup_duration = pf.lookup_shortest_path(driver_node, pickup_node)
+            dropoff_duration = pf.lookup_shortest_path(pickup_node, dropoff_node)
+            driver_profit = dropoff_duration - pickup_duration
             ## add to min heap
-            heapq.heappush(times, (pickup_duration,(passenger, driver, dropoff_duration)))
-    return times
+            weighted_sum = 0.5 * waiting_time + 0.5 * driver_profit
+            heapq.heappush(heuristic, (-1 * weighted_sum,(passenger, driver, pickup_duration, dropoff_duration)))
+    return heuristic
 
 
 def find_matches(avail_drivers, avail_passengers, times):
@@ -143,10 +142,7 @@ def find_matches(avail_drivers, avail_passengers, times):
         ## pop the minimum pickup duration pair
         min_times = heapq.heappop(times)
         ## information about pair
-        pickup_duration = min_times[0]
-        dropoff_duration = min_times[1][2]
-        passenger = min_times[1][0]
-        driver = min_times[1][1]
+        passenger, driver, pickup_duration, dropoff_duration = min_times[1][0], min_times[1][1], min_times[1][2], min_times[1][3]
         ## the driver passenger pair is valid (BOTH are still available)
         if passenger in avail_passengers and driver in avail_drivers:
             ## well now they're not available!
@@ -156,18 +152,11 @@ def find_matches(avail_drivers, avail_passengers, times):
             passengerAndDrivers.append([passenger, driver,pickup_duration,dropoff_duration])
     return passengerAndDrivers
 
-def time_to_integer(dt):
-    # Check if the date is a weekend (Saturday or Sunday)
-    if dt.weekday() >= 5:  # 5 for Saturday, 6 for Sunday
-        return 24 + dt.hour
-    else:
-        return dt.hour
-
-simulation = T3(passengersHeap_PQ, driversHeap_PQ, metricsRecorded)
+simulation = T5(passengersHeap_PQ, driversHeap_PQ, metricsRecorded)
 end_time = time.time()
 total_time = end_time - algo_start_time
 matching_time = end_time - matching_start_time
-summarizeResult(simulation, 'T3')
+summarizeResult(simulation, 'T5')
 print('Time for Data to Load: ', data_loading_time)
 print('Time for Matching Algorithm: ', matching_time)
 print('ALGORITHM ENDED, TIME ELAPSED: ', total_time)

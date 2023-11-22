@@ -34,12 +34,13 @@ with open('./data/node_data.json', 'r') as f:
     node_data = json.load(f)
 
 
-def read_passengers_csv(file_name):
+def read_passengers_csv(file_name, count):
     passengers = []
     heapq.heapify(passengers)  # Initialize an empty heap
     with open(file_name, 'r') as file:
         csv_reader = csv.reader(file)
         next(csv_reader, None)  # Skip the header
+        i = 0
         for row in csv_reader:
             timestamp = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
             sourceLat = float(row[1])
@@ -50,6 +51,9 @@ def read_passengers_csv(file_name):
             dropOffLocationVertexID = findNearestVertex(float(row[3]), float(row[4]), node_data)
             print(Passenger(timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID))
             heapq.heappush(passengers, Passenger(timestamp, sourceLat, sourceLon, destLat, destLon, pickUpLocationVertexID, dropOffLocationVertexID))  # Add passengers to the heap
+            i+=1
+            if i == count:
+                break
 
     print(f"passengers heap pq is loaded and is of length {len(passengers)}")
     return passengers
